@@ -10,7 +10,7 @@ from datetime import date, datetime,timedelta
 import pickle
 train_info_list = []
 
-max_attempts = 4  # Maximum number of retry attempts
+max_attempts = 3  # Maximum number of retry attempts
 
 faulty_train = []
 
@@ -84,7 +84,7 @@ class TrainFX():
         return response, station_delay
     
 
-def getTrainDelayOnDate(train_no, date, timeout = 5):
+def getTrainDelayOnDate(train_no, date, timeout = 3):
     unix_time = int(datetime.utcnow().timestamp()-1532)
     headers = {
         'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/118.0.0.0 Safari/537.36',
@@ -146,7 +146,6 @@ def getDelayForAllDates(train_no):
                 print(f"Timeout error for train {train_no}. Retrying... ({attempts + 1}/{max_attempts})")
                 attempts += 1
             except requests.RequestException as e:
-                train_with_no_delay_data.append(train_no)
                 print(f"Request failed for train {train_no} with error: {e}")
                 break  # Break out of the loop for other request errors
             if attempts == max_attempts:
@@ -162,50 +161,11 @@ print(train_numbers)
 # train_numbers = ['14233', '20665', '22224', '22439', '20979']
 import numpy as np
 
-num_parts = 8
-split_arrays = np.array_split(train_numbers, num_parts)
-train_with_no_delay_data = []
-
-import json
-import threading
-
-def process_part(part_index, train_with_no_delay_data):
-    train_numbers = split_arrays[part_index]
-    final_train_delay_data = {}
+with open('./data/train_delay.json', 'a') as f:
     for train in train_numbers:
         t = getDelayForAllDates(train)
-        if not t:
-            train_with_no_delay_data.append(train)
+        if t  == {}:
             continue
-        final_train_delay_data[train] = t
-
-    with open(f'./data/train_delay_22_23_{part_index + 1}.json', 'w') as f:
-        json.dump(final_train_delay_data, f)
-
-threads = []
-for i in range(num_parts):
-    thread = threading.Thread(target=process_part, args=(i, train_with_no_delay_data))
-    threads.append(thread)
-    thread.start()
-
-# Wait for all threads to finish
-for thread in threads:
-    thread.join()
-
-
-# for i in range(num_parts):
-#     train_numbers = split_arrays[i]
-#     final_train_delay_data = {}
-#     for train in train_numbers:
-#         t = getDelayForAllDates(train)
-#         if t == {}:
-#             train_with_no_delay_data.append(train)
-#             continue
-#         final_train_delay_data[train] = t
-#     with open(f'train_delay_22_23_{i + 1}.json', 'w') as f:
-#         json.dump(final_train_delay_data, f)
-
-print(train_with_no_delay_data)
-with open('train_with_no_delay.pkl', 'wb') as file:
-    # Write each element of the list to a new line in the file
-    pickle.dump(train_with_no_delay_data, file)
+        json.dump({train : t}, f)
+        f.write('\n')
+        f.flush
