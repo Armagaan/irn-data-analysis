@@ -1,4 +1,4 @@
-# Data analysis of the Indian Railway Network
+# Data Analysis of the Indian Railway Network
 ![Indian Train](train.png)
 
 # Blog
@@ -29,6 +29,7 @@ pip install torch-geometric
 pip install torch-geometric-temporal
 
 conda install ipykernel ipywidgets matplotlib seaborn networkx --yes
+conda install -c anaconda beautifulsoup4 --yes
 ```
 
 # Code
@@ -39,3 +40,4 @@ conda install ipykernel ipywidgets matplotlib seaborn networkx --yes
 | `src/train_tgnn.ipynb` | Train a TGNN to predict the number of delayed trains at a station. |
 | `src/json_to_graph_time.ipynb` | Create a temporal graph dataset where the target is the average delay at a station. |
 | `src/train_tgnn_time.ipynb` | Train a TGNN to predict the average delay at a station. |
+| `src/scrapper.ipynb` | Contains functions for scrapping train data (delay, info, connectivity). |
